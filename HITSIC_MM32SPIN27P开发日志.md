@@ -6,8 +6,6 @@
 
 使用工具：IAR8.32，官方开发套件和例程包
 
-![](C:%5CUsers%5Clenovo%5CDesktop%5CHITSIC_MM32SPIN_IAR_image%5C4.PNG)
-
 ```
 MM32_IAR_EWARM_pack_Ver1.50.zip
 MM32SPIN2x_p_Lib_Samples_V1.11_SC.zip
