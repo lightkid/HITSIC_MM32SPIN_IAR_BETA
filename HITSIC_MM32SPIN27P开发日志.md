@@ -244,3 +244,192 @@ extern "C"{
 ```
 
 4.保存编译，通过
+
+### Week2
+
+#### 学习数据手册
+
+使用MM32SPIN27PS
+
+闪存		128kB		封装		LQFP64
+
+SRAM	 12kB		   CPU频率 96MHz
+
+
+
+### Week3
+
+#### 练习
+
+首先观察单片机内部的总线，不同的外设通过不同名称的线与cpu相连，当调用这些外设的时候，要先开启对应总线的时钟，再针对外设进行初始化。
+
+##### 一、GPIO口的使用
+
+调用GPIO需要两个头文件，以下不知道来源的东西要到这两个文件及其源文件中找。
+
+```
+#include "HAL_gpio.h"
+#include "HAL_rcc.h"
+```
+
+下面以开启开发板上蜂鸣器为例介绍（对应引脚为D6）
+
+1.定义一个结构体
+
+```
+GPIO_InitTypeDef GPIO_InitStructure;
+```
+
+2.然后开启时钟
+
+```
+RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOD, ENABLE);
+```
+
+3.设置结构体中的变量(通用推挽输出)
+
+```
+GPIO_InitStructure1.GPIO_Pin=GPIO_PIN_6;
+GPIO_InitStructure1.GPIO_Mode=GPIO_Mode_Out_PP;
+GPIO_InitStructure1.GPIO_Speed=GPIO_Speed_50MHz;
+```
+
+4.初始化GPIO口
+
+```
+GPIO_Init(GPIOD,&GPIO_InitStructure);
+```
+
+5.对该GPIO口进行写操作
+
+```
+GPIO_WriteBit(GPIOD,GPIO_PIN_6,Bit_SET);//置1
+delay();//延时，为了能听到响
+GPIO_WriteBit(GPIOD,GPIO_PIN_6,Bit_RESET);//置0
+```
+
+6.GPIO其余操作详见HAL_gpio.h
+
+##### 二、GPIO外部中断（EXTI）
+
+要再包含以下头文件
+
+```
+#include "HAL_exti.h"
+#include "HAL_misc.h"
+#include "HAL_syscfg.h"
+```
+
+还是以打开蜂鸣器为例，这次使用中断，按键触发中断
+
+对应的一些变量设置到对应的头文件找
+
+```
+//初始化一个外部中断，C1(KEY2)
+GPIO_InitTypeDef GPIO_InitStructure;//GPIO
+EXTI_InitTypeDef EXTI_InitStructure;//外部中断
+NVIC_InitTypeDef NVIC_InitStructure;//中断管理器
+//开总线时钟
+RCC_APB2PeriphClockCmd(RCC_APB2Periph_SYSCFG, ENABLE);
+RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOC, ENABLE);
+
+GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;//详见手册要求
+GPIO_InitStructure.GPIO_Pin = GPIO_Pin_1;
+GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+GPIO_Init(GPIOC, &GPIO_InitStructure);
+
+SYSCFG_EXTILineConfig(EXTI_PortSourceGPIOC, EXTI_PinSource1);//选择C1作为外部中断线路
+EXTI_InitStructure.EXTI_Line = EXTI_Line1;
+EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;
+EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Falling;
+EXTI_InitStructure.EXTI_LineCmd = ENABLE;
+EXTI_Init(&EXTI_InitStructure);
+
+NVIC_InitStructure.NVIC_IRQChannel = EXTI0_1_IRQn;     //IRQn type里找
+NVIC_InitStructure.NVIC_IRQChannelPriority = 3;        //优先级
+NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;	 //IRQ通道使能
+NVIC_Init(&NVIC_InitStructure);	//根据指定的参数初始化NVIC寄存器
+```
+
+对应的中断服务函数到startup文件中找
+
+注意在中断服务程序中要手动将中断标志位清0
+
+为了正常运行，中断服务函数前后要加上
+
+```
+#ifdef __cplusplus
+extern "C"{
+#endif
+
+/*code*/
+
+#ifdef __cplusplus
+}
+#endif
+```
+
+
+
+```
+#ifdef __cplusplus
+extern "C"{
+#endif
+void EXTI0_1_IRQHandler(void)//名字看startup
+{
+  EXTI_ClearFlag(EXTI_Line1);//清除中断标志位
+  GPIO_WriteBit(BEEP_PORT,BEEP_PIN,Bit_SET);//打开蜂鸣器
+  delay(1000);
+  GPIO_WriteBit(BEEP_PORT,BEEP_PIN,Bit_RESET);//关闭
+}
+#ifdef __cplusplus
+}
+#endif
+```
+
+##### 三、定时器中断（TIM）
+
+再包含头文件
+
+```
+#include "HAL_tim.h"
+```
+
+以蜂鸣器为例，这次让它定时响。
+
+以TIM1（APB2）为例
+
+```
+//定时器中断TIM1为例在APB2上
+TIM_TimeBaseInitTypeDef TIM_TimeBaseInitStructure;
+RCC_APB2PeriphClockCmd(RCC_APB2Periph_TIM1, ENABLE);//开时钟APB2
+
+TIM_TimeBaseInitStructure.TIM_Prescaler = 10000;    //预分频，总线上的时钟频率除此数得计数频率
+TIM_TimeBaseInitStructure.TIM_Period = 10000;       //自动装载的值
+TIM_TimeBaseInitStructure.TIM_CounterMode = TIM_CounterMode_Up;//向上计数
+TIM_TimeBaseInitStructure.TIM_ClockDivision = TIM_CKD_DIV1;    //时钟分频
+TIM_TimeBaseInitStructure.TIM_RepetitionCounter=0;
+TIM_TimeBaseInit(TIM1, &TIM_TimeBaseInitStructure);
+
+NVIC_InitTypeDef NVIC_InitStructure;
+NVIC_InitStructure.NVIC_IRQChannel=TIM1_BRK_UP_TRG_COM_IRQn;
+NVIC_InitStructure.NVIC_IRQChannelPriority=3;
+NVIC_InitStructure.NVIC_IRQChannelCmd=ENABLE;
+NVIC_Init(&NVIC_InitStructure);
+
+TIM_ITConfig(TIM1, TIM_IT_Update, ENABLE);//相应中断，此处为计数器溢出更新引起中断
+TIM_Cmd(TIM1, ENABLE);//计数器使能
+```
+
+到startup中找到对应的中断服务函数（更新引起的中断）
+
+```
+void TIM1_BRK_UP_TRG_COM_IRQHandler(void)
+{
+  TIM_ClearITPendingBit(TIM1, TIM_IT_Update);//手动清
+  GPIO_WriteBit(BEEP_PORT,BEEP_PIN,Bit_SET);
+  delay(100);
+  GPIO_WriteBit(BEEP_PORT,BEEP_PIN,Bit_RESET);
+}
+```
+
