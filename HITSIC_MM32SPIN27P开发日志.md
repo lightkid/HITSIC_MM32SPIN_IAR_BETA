@@ -405,9 +405,9 @@ TIM_TimeBaseInitTypeDef TIM_TimeBaseInitStructure;
 RCC_APB2PeriphClockCmd(RCC_APB2Periph_TIM1, ENABLE);//开时钟APB2
 
 TIM_TimeBaseInitStructure.TIM_Prescaler = 10000;    //预分频，总线上的时钟频率除此数得计数频率
-TIM_TimeBaseInitStructure.TIM_Period = 10000;       //自动装载的值
+TIM_TimeBaseInitStructure.TIM_Period = 10000;       //计多少个数
 TIM_TimeBaseInitStructure.TIM_CounterMode = TIM_CounterMode_Up;//向上计数
-TIM_TimeBaseInitStructure.TIM_ClockDivision = TIM_CKD_DIV1;    //时钟分频
+TIM_TimeBaseInitStructure.TIM_ClockDivision = TIM_CKD_DIV1;    //时钟分频，没什么影响
 TIM_TimeBaseInitStructure.TIM_RepetitionCounter=0;
 TIM_TimeBaseInit(TIM1, &TIM_TimeBaseInitStructure);
 
@@ -433,3 +433,49 @@ void TIM1_BRK_UP_TRG_COM_IRQHandler(void)
 }
 ```
 
+##### 四、系统时钟
+
+核心板上应用了8MHz无源晶振(HSE)，在程序中设定频率。
+
+时钟图见数据手册P7
+
+外部时钟源接在OSC_OUT和OSC_IN之间，通过PLL锁相环输出SYSCLK，接下来，SYSCLK通过AHB，APB的分频，为各个外设提供时钟信号。此处程序便是设置分频的。
+
+此处编写一个子程序。
+
+```
+void HSE_SetSysClk(uint32_t RCC_PLLMul_x)//传入参数为倍频
+{
+  ErrorStatus HSEStatus;
+  RCC_DeInit();//RCC时钟复位
+  RCC_HSEConfig(RCC_HSE_ON);//开启外部晶振
+  HSEStatus = RCC_WaitForHSEStartUp();//等待获取HSE启动状态
+  //HSE启动成功
+  if(HSEStatus == SUCCESS)
+  {
+    //FLASH延时
+    //???
+    //配置总线分频因子
+    RCC_HCLKConfig(RCC_SYSCLK_Div1);//AHB
+    RCC_PCLK1Config(RCC_HCLK_Div2);//APB1
+    RCC_PCLK2Config(RCC_HCLK_Div1);//APB2
+    //PLL锁相环的输入源和倍频因子，使能PLL
+    RCC_PLLConfig(RCC_PLLSource_HSE_Div1, RCC_PLLMul_x);//PLL输入时钟，倍频
+    RCC_PLLCmd(ENABLE);
+    //等待PLL准备就绪
+    while (RCC_GetFlagStatus(RCC_FLAG_PLLRDY) == RESET);
+    //选择PLLCLK作为系统时钟
+    RCC_SYSCLKConfig(RCC_SYSCLKSource_PLLCLK);
+    //等待系统时钟切换成功并稳定
+    while (RCC_GetSYSCLKSource() != 0x08);//0x08代表系统使用PLLCLK
+
+  }
+  else
+  {
+    //启动失败，添加错误处理代码
+    /*code*/
+  }
+}
+```
+
+此函数添加在主程序起始部分。
