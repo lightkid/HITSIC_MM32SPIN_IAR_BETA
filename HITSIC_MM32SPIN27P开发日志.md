@@ -441,7 +441,7 @@ void TIM1_BRK_UP_TRG_COM_IRQHandler(void)
 
 外部时钟源接在OSC_OUT和OSC_IN之间，通过PLL锁相环输出SYSCLK，接下来，SYSCLK通过AHB，APB的分频，为各个外设提供时钟信号。此处程序便是设置分频的。
 
-此处编写一个子程序。
+此处编写一个子程序。**推荐倍数为12**
 
 ```
 void HSE_SetSysClk(uint32_t RCC_PLLMul_x)//传入参数为倍频
@@ -479,3 +479,74 @@ void HSE_SetSysClk(uint32_t RCC_PLLMul_x)//传入参数为倍频
 ```
 
 此函数添加在主程序起始部分。
+
+##### 五、I2C
+
+硬件I2C没有调出来，所以使用软件IO口模拟。
+
+自己包装两个文件
+
+```
+#include "i2c.h"
+#include "i2c.c"
+```
+
+其中应用到了延时函数，包含在
+
+```
+#include "delay.h"
+#include "delay.c"
+```
+
+软件I2C供用户使用的函数有
+
+```
+//for user
+void SOFT_I2C_Init(void);
+void SOFT_I2C_Read(uint8_t SlaveAddr, uint8_t reg, uint8_t* rxbuff, uint8_t len);
+void SOFT_I2C_Write(uint8_t SlaveAddr, uint8_t reg, uint8_t* txbuff, uint8_t len);
+```
+
+用户可修改的地方为软件I2C的引脚
+
+//可修改
+
+```
+#define SOFT_I2C_SCL GPIO_Pin_8
+#define SOFT_I2C_SDA GPIO_Pin_9
+#define GPIO_SOFT_I2C GPIOB
+#define RCC_SOFT_I2C_GPIO RCC_AHBPeriph_GPIOB
+```
+
+智能车制作过程中I2C应用在陀螺仪数据传递中，所以下面以MPU6050数据接收为例介绍
+
+MPU6050相关文件为
+
+```
+#include "I2C_MPU6050.h"
+#include "I2C_MPU6050.c"
+```
+
+用户使用的函数为
+
+```
+void MPU6050_Init(void);
+void inv_mpu6050_poll_sensor_data_reg(inv_mpu6050_t* s);
+```
+
+有关MPU6050配置的函数可自行查看上面的两个文件
+
+在文件中已经定义一个结构体icm1，这个结构体中包含传回来的参数
+
+实际使用的时候使用定时中断14接收数据
+
+```
+//陀螺仪
+void TIM14_IRQHandler(void)
+{
+  TIM_ClearITPendingBit(TIM14, TIM_IT_Update);
+  inv_mpu6050_poll_sensor_data_reg(&icm1);
+  //a=icm1.rawdata.ax;
+}
+```
+
