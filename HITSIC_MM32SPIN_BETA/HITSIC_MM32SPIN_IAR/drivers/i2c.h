@@ -6,7 +6,7 @@
 //softi2c
 
 ///*! @brief Timeout times for waiting flag. */
-#define I2C_WAIT_TIMEOUT 300U /* Define to zero means keep waiting until the flag is assert/deassert. */
+#define I2C_WAIT_TIMEOUT 200U /* Define to zero means keep waiting until the flag is assert/deassert. */
 //
 ///*! @brief  I2C status return codes. */
 //enum _i2c_status

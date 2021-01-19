@@ -18,18 +18,18 @@ int main(void)
   HSE_SetSysClk(RCC_PLLMul_12);
   delay_init();
   //读写gpio
-  GPIO_InitTypeDef GPIO_InitStructure1;//声明一个结构体变量，用来初始化GPIO
-  RCC_AHBPeriphClockCmd(BEEP_PORT_RCC, ENABLE);
-  GPIO_InitStructure1.GPIO_Pin = BEEP_PIN;
-  GPIO_InitStructure1.GPIO_Mode = GPIO_Mode_Out_PP;
-  GPIO_InitStructure1.GPIO_Speed = GPIO_Speed_50MHz;
-  GPIO_Init(BEEP_PORT, &GPIO_InitStructure1);
+//  GPIO_InitTypeDef GPIO_InitStructure1;//声明一个结构体变量，用来初始化GPIO
+//  //RCC_AHBPeriphClockCmd(BEEP_PORT_RCC, ENABLE);
+//  GPIO_InitStructure1.GPIO_Pin = BEEP_PIN;
+//  GPIO_InitStructure1.GPIO_Mode = GPIO_Mode_Out_PP;
+//  GPIO_InitStructure1.GPIO_Speed = GPIO_Speed_50MHz;
+//  GPIO_Init(BEEP_PORT, &GPIO_InitStructure1);
   delay_ms(100);
   RCC_ClocksTypeDef SYS_Clock;
   RCC_GetClocksFreq(&SYS_Clock);
   
   MPU6050_Init();
-  
+  OLED_Init();
   //使用TIM14作为定时器，5ms读取一次
   TIM_TimeBaseInitTypeDef TIM_TimeBaseInitStructure;
   
@@ -50,8 +50,9 @@ int main(void)
   
   TIM_ITConfig(TIM14, TIM_IT_Update, ENABLE);//相应中断，此处为计数器溢出更新引起中断
   TIM_Cmd(TIM14, ENABLE);//计数器使能
-  
-  
+  delay_ms(200);
+  OLED_CLS();
+//  OLED_Logo();
   
 //  GPIO_InitTypeDef GPIO_InitStructure2;//声明一个结构体变量，用来初始化GPIO
 //  RCC_AHBPeriphClockCmd(KEY_PORT_RCC, ENABLE);
@@ -104,6 +105,30 @@ int main(void)
 //  TIM_ITConfig(TIM1, TIM_IT_Update, ENABLE);//相应中断，此处为计数器溢出更新引起中断
 //  TIM_Cmd(TIM1, ENABLE);//计数器使能
 //  
+  //PWM中央对齐
+//  char str[]= "hello";
+//  OLED_P6x8Str(0,0,str);
+//  OLED_P6x8Str(0,1,"1.hello world!");
+//  OLED_P6x8Str(0,2,"2.hello world!");
+//  OLED_P6x8Str(0,3,"3.hello world!");
+//  OLED_P6x8Str(0,4,"4.hello world!");
+//  OLED_P6x8Str(0,5,"5.hello world!");
+//  OLED_P6x8Str(0,6,"6.hello world!");
+//  delay_ms(500);
+//  delay_ms(500);
+//  delay_ms(500);
+//  delay_ms(500);
+//  delay_ms(500);
+//  delay_ms(500);
+//  delay_ms(500);
+//  delay_ms(500);
+//  delay_ms(500);
+//  delay_ms(500);
+//  OLED_CLS();
+//  OLED_Print_Float(0,0,1.11);
+//  OLED_Print_Num(0,1,12);
+//  OLED_P6x8Str(0,6,"              ");
+ // OLED_P6x8Str(0,5,"hello world!");
   while(true)
   {
     //MPU6050_Get();
@@ -122,6 +147,7 @@ int main(void)
 //      }
       
       //delay(10000);
+    
   }
   return 0;
 }
@@ -159,13 +185,30 @@ void TIM1_BRK_UP_TRG_COM_IRQHandler(void)
   GPIO_WriteBit(BEEP_PORT,BEEP_PIN,Bit_RESET);
 }
 float a=0;
-
+int count_tim14=0;
 //陀螺仪
 void TIM14_IRQHandler(void)
 {
   TIM_ClearITPendingBit(TIM14, TIM_IT_Update);
   inv_mpu6050_poll_sensor_data_reg(&icm1);
-  a=icm1.rawdata.ax;
+  a=icm1.rawdata.gx;
+  
+  if((count_tim14++) == 100)//让显示的频率低一点
+  {
+    OLED_P6x8Str(0,0,"ax:");
+    OLED_Print_Float(19,0,icm1.rawdata.ax);
+    OLED_P6x8Str(0,1,"ay:");
+    OLED_Print_Float(19,1,icm1.rawdata.ay);
+    OLED_P6x8Str(0,2,"az:");
+    OLED_Print_Float(19,2,icm1.rawdata.az);
+    OLED_P6x8Str(0,3,"gx:");
+    OLED_Print_Float(19,3,icm1.rawdata.gx);
+    OLED_P6x8Str(0,4,"gy:");
+    OLED_Print_Float(19,4,icm1.rawdata.gy);
+    OLED_P6x8Str(0,5,"gz:");
+    OLED_Print_Float(19,5,icm1.rawdata.gz);
+    count_tim14=0;
+  }
 }
 
 #ifdef __cplusplus

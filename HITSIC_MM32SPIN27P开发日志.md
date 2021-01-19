@@ -550,3 +550,37 @@ void TIM14_IRQHandler(void)
 }
 ```
 
+##### 六、OLED
+
+自行包装的文件
+
+```
+#include "oled.h"
+#include "oled.c"
+```
+
+更改引脚，也是IO模拟
+
+```
+#define OLED_CK    GPIOB,GPIO_Pin_15     //OLED CK管脚
+#define OLED_DI	   GPIOB,GPIO_Pin_13     //OLED DI管脚
+#define OLED_RST   GPIOB,GPIO_Pin_14     //OLED RST管脚
+#define OLED_DC	   GPIOB,GPIO_Pin_12     //OLED DC管脚
+#define OLED_CS	   GPIOB,GPIO_Pin_11     //OLED CS管脚 默认拉低，可以不用
+#define OLED_GPIO  GPIOB
+#define OLED_RCC   RCC_AHBPeriph_GPIOB
+```
+
+```
+void OLED_Init(void);//初始化
+void OLED_CLS(void);//清屏
+void OLED_PutPixel(unsigned char x,unsigned char y);//点亮一个点
+//一共8行，y0~7x0~127
+void OLED_P6x8Str(unsigned char x,unsigned char y, char ch[]);//写字符串
+void OLED_P6x8Rst(unsigned char x,unsigned char y, char ch[]);//反色写字符串
+void OLED_P8x16Str(unsigned char x,unsigned char y, char ch[]);//写大字符串
+void OLED_Logo(void);//社团logo
+void OLED_Print_Float(uint8_t x, uint8_t y, float num);//写浮点数
+void OLED_Print_Num(uint8_t x, uint8_t y, int num);//写整数
+```
+
