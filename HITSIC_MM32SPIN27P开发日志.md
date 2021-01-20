@@ -584,3 +584,57 @@ void OLED_Print_Float(uint8_t x, uint8_t y, float num);//写浮点数
 void OLED_Print_Num(uint8_t x, uint8_t y, int num);//写整数
 ```
 
+##### 七、FLASH
+
+```
+#include "flash.h"
+#include "flash.c"
+```
+
+FLASH内部分块，一块有4页，一页的大小为1k，读写的时候以页为单位。
+
+读写的时侯参数选择有
+
+```
+//选择哪块，一块4k
+typedef enum
+{
+    FLASH_SECTION_00,
+    FLASH_SECTION_01,
+    FLASH_SECTION_02,
+    FLASH_SECTION_03,
+    FLASH_SECTION_04,
+    FLASH_SECTION_05,
+    FLASH_SECTION_06,
+    FLASH_SECTION_07,
+    FLASH_SECTION_08,
+    FLASH_SECTION_09,
+    FLASH_SECTION_10,
+    FLASH_SECTION_11,
+    FLASH_SECTION_12,
+    FLASH_SECTION_13,
+    FLASH_SECTION_14,
+    FLASH_SECTION_15,
+}FLASH_SEC_enum;
+//一块4页
+typedef enum
+{
+    FLASH_PAGE_0,
+    FLASH_PAGE_1,
+    FLASH_PAGE_2,
+    FLASH_PAGE_3,
+}FLASH_PAGE_enum;
+```
+
+此外还有长度和数据
+
+函数：
+
+```
+uint8_t Flash_Check(FLASH_SEC_enum sector_num, FLASH_PAGE_enum page_num);//检查该页有无数据
+uint8_t Flash_Erase_Page(FLASH_SEC_enum sector_num, FLASH_PAGE_enum page_num);//擦除一页
+void Flash_Page_Read (FLASH_SEC_enum sector_num, FLASH_PAGE_enum page_num, uint32_t *buf, uint16_t len);//读一页
+uint8_t Flash_Page_Write(FLASH_SEC_enum sector_num, FLASH_PAGE_enum page_num, const uint32_t *buf, uint16_t len);//写一页
+```
+
+没有初始化函数

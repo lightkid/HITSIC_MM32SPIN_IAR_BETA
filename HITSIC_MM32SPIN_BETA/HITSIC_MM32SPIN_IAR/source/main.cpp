@@ -1,6 +1,8 @@
 
 #include "board.h"
 
+//核心1
+
 #define BEEP_PORT       GPIOD
 #define BEEP_PIN        GPIO_Pin_6
 #define BEEP_PORT_RCC   RCC_AHBPeriph_GPIOD
@@ -18,40 +20,74 @@ int main(void)
   HSE_SetSysClk(RCC_PLLMul_12);
   delay_init();
   //读写gpio
-//  GPIO_InitTypeDef GPIO_InitStructure1;//声明一个结构体变量，用来初始化GPIO
-//  //RCC_AHBPeriphClockCmd(BEEP_PORT_RCC, ENABLE);
-//  GPIO_InitStructure1.GPIO_Pin = BEEP_PIN;
-//  GPIO_InitStructure1.GPIO_Mode = GPIO_Mode_Out_PP;
-//  GPIO_InitStructure1.GPIO_Speed = GPIO_Speed_50MHz;
-//  GPIO_Init(BEEP_PORT, &GPIO_InitStructure1);
+  GPIO_InitTypeDef GPIO_InitStructure1;//声明一个结构体变量，用来初始化GPIO
+  RCC_AHBPeriphClockCmd(BEEP_PORT_RCC, ENABLE);
+  GPIO_InitStructure1.GPIO_Pin = BEEP_PIN;
+  GPIO_InitStructure1.GPIO_Mode = GPIO_Mode_Out_PP;
+  GPIO_InitStructure1.GPIO_Speed = GPIO_Speed_50MHz;
+  GPIO_Init(BEEP_PORT, &GPIO_InitStructure1);
   delay_ms(100);
   RCC_ClocksTypeDef SYS_Clock;
   RCC_GetClocksFreq(&SYS_Clock);
   
-  MPU6050_Init();
+//  MPU6050_Init();
   OLED_Init();
+  delay_ms(1000);
+  const uint32_t buff[10]={};
+  //Flash_Page_Read(FLASH_SECTION_15, FLASH_PAGE_0, buff, 10);
+  uint8_t as = Flash_Page_Write (FLASH_SECTION_15, FLASH_PAGE_0, buff, 10);
+  for(uint8_t i=0;i<7;i++)
+  {
+    OLED_Print_Num(0,i,buff[i]);
+  }
   //使用TIM14作为定时器，5ms读取一次
-  TIM_TimeBaseInitTypeDef TIM_TimeBaseInitStructure;
+  //  TIM_TimeBaseInitTypeDef TIM_TimeBaseInitStructure;
+  //  
+  //  RCC_APB2PeriphClockCmd(RCC_APB2Periph_TIM14, ENABLE);
+//  
+//  TIM_TimeBaseInitStructure.TIM_Prescaler = 96;//1MHz
+//  TIM_TimeBaseInitStructure.TIM_Period = 5000;//5ms
+//  TIM_TimeBaseInitStructure.TIM_CounterMode = TIM_CounterMode_Up;
+//  TIM_TimeBaseInitStructure.TIM_ClockDivision = TIM_CKD_DIV1;
+//  TIM_TimeBaseInitStructure.TIM_RepetitionCounter = 0;
+//  TIM_TimeBaseInit(TIM14, &TIM_TimeBaseInitStructure);
+//  
+//  NVIC_InitTypeDef NVIC_InitStructure;
+//  NVIC_InitStructure.NVIC_IRQChannel = TIM14_IRQn;
+//  NVIC_InitStructure.NVIC_IRQChannelPriority = 3;
+//  NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+//  NVIC_Init(&NVIC_InitStructure);
+//  
+//  TIM_ITConfig(TIM14, TIM_IT_Update, ENABLE);//相应中断，此处为计数器溢出更新引起中断
+//  TIM_Cmd(TIM14, ENABLE);//计数器使能
+//  delay_ms(200);
+//  OLED_CLS();
   
-  RCC_APB2PeriphClockCmd(RCC_APB2Periph_TIM14, ENABLE);
-  
-  TIM_TimeBaseInitStructure.TIM_Prescaler = 96;//1MHz
-  TIM_TimeBaseInitStructure.TIM_Period = 5000;//5ms
-  TIM_TimeBaseInitStructure.TIM_CounterMode = TIM_CounterMode_Up;
-  TIM_TimeBaseInitStructure.TIM_ClockDivision = TIM_CKD_DIV1;
-  TIM_TimeBaseInitStructure.TIM_RepetitionCounter = 0;
-  TIM_TimeBaseInit(TIM14, &TIM_TimeBaseInitStructure);
-  
-  NVIC_InitTypeDef NVIC_InitStructure;
-  NVIC_InitStructure.NVIC_IRQChannel = TIM14_IRQn;
-  NVIC_InitStructure.NVIC_IRQChannelPriority = 3;
-  NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-  NVIC_Init(&NVIC_InitStructure);
-  
-  TIM_ITConfig(TIM14, TIM_IT_Update, ENABLE);//相应中断，此处为计数器溢出更新引起中断
-  TIM_Cmd(TIM14, ENABLE);//计数器使能
-  delay_ms(200);
-  OLED_CLS();
+//  //uart2用来双机通讯 a2t  a3r
+//  GPIO_InitTypeDef GPIO_InitStructure;//声明一个结构体变量，用来初始化GPIO
+//  RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOA, ENABLE);
+//  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_2 | GPIO_Pin_3;
+//  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
+//  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+//  GPIO_Init(GPIOA, &GPIO_InitStructure);
+//  GPIO_PinAFConfig(GPIOA, GPIO_PinSource2, GPIO_AF_1);
+//  GPIO_PinAFConfig(GPIOA, GPIO_PinSource3, GPIO_AF_1);
+//  
+//  UART_InitTypeDef UART_InitStructure;
+//  RCC_APB1PeriphClockCmd(RCC_APB1Periph_UART2, ENABLE);
+//  UART_StructInit(&UART_InitStructure);
+//  UART_InitStructure.UART_BaudRate=115200;//波特率
+//  UART_Init(UART1, &UART_InitStructure);
+//  
+////  UART_ITConfig(UART2, UART_IT_TXIEN, ENABLE);
+//  
+//  NVIC_InitTypeDef NVIC_InitStructure;
+//  NVIC_InitStructure.NVIC_IRQChannel = UART2_IRQn;
+//  NVIC_InitStructure.NVIC_IRQChannelPriority = 3;
+//  NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+//  NVIC_Init(&NVIC_InitStructure);
+//  UART_ITConfig(UART1, UART_IT_RXIEN, ENABLE);//两种中断
+//  UART_Cmd(UART2, ENABLE);
 //  OLED_Logo();
   
 //  GPIO_InitTypeDef GPIO_InitStructure2;//声明一个结构体变量，用来初始化GPIO
@@ -147,7 +183,8 @@ int main(void)
 //      }
       
       //delay(10000);
-    
+//    UART_PutChar(UART1,'L');                     //发送 字节到UART口
+//    delay_ms(500);
   }
   return 0;
 }
@@ -175,41 +212,69 @@ extern "C"{
 //  delay(1000);
 //  GPIO_WriteBit(BEEP_PORT,BEEP_PIN,Bit_RESET);
 //}
+//
+//void TIM1_BRK_UP_TRG_COM_IRQHandler(void)
+//{
+//  //TIM_ClearFlag(TIM1, TIM_FLAG_Update);
+//  TIM_ClearITPendingBit(TIM1, TIM_IT_Update);
+//  GPIO_WriteBit(BEEP_PORT,BEEP_PIN,Bit_SET);
+//  delay_ms(100);
+//  GPIO_WriteBit(BEEP_PORT,BEEP_PIN,Bit_RESET);
+//}
+//float a=0;
+//int count_tim14=0;
+////陀螺仪
+//void TIM14_IRQHandler(void)
+//{
+//  TIM_ClearITPendingBit(TIM14, TIM_IT_Update);
+//  inv_mpu6050_poll_sensor_data_reg(&icm1);
+//  a=icm1.rawdata.gx;
+//  
+//  if((count_tim14++) == 100)//让显示的频率低一点
+//  {
+//    OLED_P6x8Str(0,0,"ax:");
+//    OLED_Print_Float(19,0,icm1.rawdata.ax);
+//    OLED_P6x8Str(0,1,"ay:");
+//    OLED_Print_Float(19,1,icm1.rawdata.ay);
+//    OLED_P6x8Str(0,2,"az:");
+//    OLED_Print_Float(19,2,icm1.rawdata.az);
+//    OLED_P6x8Str(0,3,"gx:");
+//    OLED_Print_Float(19,3,icm1.rawdata.gx);
+//    OLED_P6x8Str(0,4,"gy:");
+//    OLED_Print_Float(19,4,icm1.rawdata.gy);
+//    OLED_P6x8Str(0,5,"gz:");
+//    OLED_Print_Float(19,5,icm1.rawdata.gz);
+//    count_tim14=0;
+//  }
+//}
 
-void TIM1_BRK_UP_TRG_COM_IRQHandler(void)
-{
-  //TIM_ClearFlag(TIM1, TIM_FLAG_Update);
-  TIM_ClearITPendingBit(TIM1, TIM_IT_Update);
-  GPIO_WriteBit(BEEP_PORT,BEEP_PIN,Bit_SET);
-  delay_ms(100);
-  GPIO_WriteBit(BEEP_PORT,BEEP_PIN,Bit_RESET);
-}
-float a=0;
-int count_tim14=0;
-//陀螺仪
-void TIM14_IRQHandler(void)
-{
-  TIM_ClearITPendingBit(TIM14, TIM_IT_Update);
-  inv_mpu6050_poll_sensor_data_reg(&icm1);
-  a=icm1.rawdata.gx;
-  
-  if((count_tim14++) == 100)//让显示的频率低一点
-  {
-    OLED_P6x8Str(0,0,"ax:");
-    OLED_Print_Float(19,0,icm1.rawdata.ax);
-    OLED_P6x8Str(0,1,"ay:");
-    OLED_Print_Float(19,1,icm1.rawdata.ay);
-    OLED_P6x8Str(0,2,"az:");
-    OLED_Print_Float(19,2,icm1.rawdata.az);
-    OLED_P6x8Str(0,3,"gx:");
-    OLED_Print_Float(19,3,icm1.rawdata.gx);
-    OLED_P6x8Str(0,4,"gy:");
-    OLED_Print_Float(19,4,icm1.rawdata.gy);
-    OLED_P6x8Str(0,5,"gz:");
-    OLED_Print_Float(19,5,icm1.rawdata.gz);
-    count_tim14=0;
-  }
-}
+
+//uint16_t uartRxbuff = 0;
+
+//void UART2_IRQHandler(void)
+//{
+//  //判断中断类型
+//  if(UART_GetITStatus(UART2, UART_IT_RXIEN))
+//  {
+//    UART_ClearITPendingBit(UART2, UART_IT_RXIEN);
+//    //读取缓冲区
+//    //uartRxbuff = UART_ReceiveData(UART2);
+//    char a = UART_GetChar(UART2);
+//    OLED_P6x8Str(0,0,&a);
+//    GPIO_WriteBit(BEEP_PORT,BEEP_PIN,Bit_SET);
+//    delay_ms(100);
+//    GPIO_WriteBit(BEEP_PORT,BEEP_PIN,Bit_RESET);
+//  }
+////  else if(UART_GetITStatus(UART2, UART_IT_TXIEN))
+////  {
+////    UART_ClearITPendingBit(UART2, UART_IT_TXIEN);
+////  }
+//  else
+//  {
+//    //error
+//  }
+//}
+
 
 #ifdef __cplusplus
 }
