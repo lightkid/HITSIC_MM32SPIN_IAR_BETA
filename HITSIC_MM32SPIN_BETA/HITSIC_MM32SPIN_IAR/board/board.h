@@ -23,6 +23,7 @@
 #include "HAL_tim.h"
 #include "HAL_uart.h"
 #include "uart.h"
+#include "upload.h"
 //#include "HAL_wwdg.h"
 #include "HAL_device.h"
 #include "I2C_MPU6050.h"

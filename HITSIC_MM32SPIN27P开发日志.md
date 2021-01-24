@@ -480,7 +480,7 @@ void HSE_SetSysClk(uint32_t RCC_PLLMul_x)//传入参数为倍频
 
 此函数添加在主程序起始部分。
 
-##### 五、I2C
+##### 五、I2C(模拟)
 
 硬件I2C没有调出来，所以使用软件IO口模拟。
 
@@ -738,3 +738,43 @@ void UART_PutFloat(UART_TypeDef* UARTx,float num);
 char UART_GetChar(UART_TypeDef* UARTx);
 ```
 
+##### 九、蓝牙传上位机
+
+蓝牙模块其实也是uart口，这次选用核心1的uart1
+
+包含头文件
+
+```
+#include "upload.h"
+#include "upload.c"
+```
+
+名优科创上位机能一次看六个变量的波形，因此，上传的数组也只有6个位置。
+
+初始化方法同uart2但是总线为apb2。
+
+使用时仅需在main中的while里写
+
+```
+Send_Variable();
+```
+
+想要上传的数据在upload.c中该函数中填写
+
+例如上传陀螺仪采集数据
+
+```
+//上传数据
+void Send_Variable(void)//发送实时变量
+{
+  uint8_t i = 0,ch = 0;
+  float temp = 0;
+  Send_Begin();
+  Variable[0] = icm1.rawdata.gx;//此处将需要发送的变量赋值到Variable
+  Variable[1] = icm1.rawdata.gy;
+  Variable[2] = icm1.rawdata.gz;
+  Variable[3] = icm1.rawdata.ax;
+  Variable[4] = icm1.rawdata.ay;
+  Variable[5] = icm1.rawdata.az;	
+  UART_PutChar(UP_UART, 0x55);
+```

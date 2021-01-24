@@ -2653,6 +2653,12 @@
         <file>
             <name>$PROJ_DIR$\..\drivers\uart.h</name>
         </file>
+        <file>
+            <name>$PROJ_DIR$\..\drivers\upload.c</name>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\..\drivers\upload.h</name>
+        </file>
     </group>
     <group>
         <name>source</name>
