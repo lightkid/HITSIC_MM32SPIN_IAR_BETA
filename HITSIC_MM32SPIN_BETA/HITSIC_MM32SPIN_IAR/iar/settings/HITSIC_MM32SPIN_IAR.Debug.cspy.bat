@@ -25,7 +25,7 @@ if not "%~1" == "" goto debugFile
 
 @echo on 
 
-"D:\Program Files (x86)\IAR Systems\Embedded Workbench 8.2\common\bin\cspybat" -f "D:\fork\HITSIC_MM32SPIN_IAR_BETA\HITSIC_MM32SPIN_BETA\HITSIC_MM32SPIN_IAR\iar\settings\HITSIC_MM32SPIN_IAR.Debug.general.xcl" --backend -f "D:\fork\HITSIC_MM32SPIN_IAR_BETA\HITSIC_MM32SPIN_BETA\HITSIC_MM32SPIN_IAR\iar\settings\HITSIC_MM32SPIN_IAR.Debug.driver.xcl" 
+"D:\Program Files (x86)\IAR Systems\Embedded Workbench 8.2\common\bin\cspybat" -f "D:\github_desk\HITSIC_MM32SPIN_IAR_BETA\HITSIC_MM32SPIN_BETA\HITSIC_MM32SPIN_IAR\iar\settings\HITSIC_MM32SPIN_IAR.Debug.general.xcl" --backend -f "D:\github_desk\HITSIC_MM32SPIN_IAR_BETA\HITSIC_MM32SPIN_BETA\HITSIC_MM32SPIN_IAR\iar\settings\HITSIC_MM32SPIN_IAR.Debug.driver.xcl" 
 
 @echo off 
 goto end 
@@ -34,7 +34,7 @@ goto end
 
 @echo on 
 
-"D:\Program Files (x86)\IAR Systems\Embedded Workbench 8.2\common\bin\cspybat" -f "D:\fork\HITSIC_MM32SPIN_IAR_BETA\HITSIC_MM32SPIN_BETA\HITSIC_MM32SPIN_IAR\iar\settings\HITSIC_MM32SPIN_IAR.Debug.general.xcl" "--debug_file=%~1" --backend -f "D:\fork\HITSIC_MM32SPIN_IAR_BETA\HITSIC_MM32SPIN_BETA\HITSIC_MM32SPIN_IAR\iar\settings\HITSIC_MM32SPIN_IAR.Debug.driver.xcl" 
+"D:\Program Files (x86)\IAR Systems\Embedded Workbench 8.2\common\bin\cspybat" -f "D:\github_desk\HITSIC_MM32SPIN_IAR_BETA\HITSIC_MM32SPIN_BETA\HITSIC_MM32SPIN_IAR\iar\settings\HITSIC_MM32SPIN_IAR.Debug.general.xcl" "--debug_file=%~1" --backend -f "D:\github_desk\HITSIC_MM32SPIN_IAR_BETA\HITSIC_MM32SPIN_BETA\HITSIC_MM32SPIN_IAR\iar\settings\HITSIC_MM32SPIN_IAR.Debug.driver.xcl" 
 
 @echo off 
 :end

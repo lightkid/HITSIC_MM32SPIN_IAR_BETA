@@ -638,3 +638,103 @@ uint8_t Flash_Page_Write(FLASH_SEC_enum sector_num, FLASH_PAGE_enum page_num, co
 ```
 
 没有初始化函数
+
+##### 八、UART
+
+包装的头文件
+
+```
+#include "uart.h"
+#include "uart.c"
+```
+
+芯片上仅有两个uart，一个负责双机通信。先以双机通信介绍。
+
+首先初始化GPIO然后复用，此时注意接收口的GPIO应为上拉或者浮空，这里使用上拉
+
+```
+//uart2用来双机通讯 a2t  a3r
+GPIO_InitTypeDef GPIO_InitStructure;//声明一个结构体变量，用来初始化GPIO
+RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOA, ENABLE);
+
+GPIO_InitStructure.GPIO_Pin = GPIO_Pin_2;
+GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
+GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+GPIO_Init(GPIOA, &GPIO_InitStructure);
+
+GPIO_InitStructure.GPIO_Pin = GPIO_Pin_3;
+GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;
+GPIO_Init(GPIOA, &GPIO_InitStructure);
+
+GPIO_PinAFConfig(GPIOA, GPIO_PinSource2, GPIO_AF_1);
+GPIO_PinAFConfig(GPIOA, GPIO_PinSource3, GPIO_AF_1);
+```
+
+然后初始化uart
+
+```
+UART_InitTypeDef UART_InitStructure;
+RCC_APB1PeriphClockCmd(RCC_APB1Periph_UART2, ENABLE);
+
+UART_InitStructure.UART_BaudRate=115200;//波特率
+UART_InitStructure.UART_WordLength = UART_WordLength_8b;
+UART_InitStructure.UART_StopBits = UART_StopBits_1;
+UART_InitStructure.UART_Parity = UART_Parity_No;
+UART_InitStructure.UART_Mode = UART_Mode_Rx | UART_Mode_Tx;
+UART_InitStructure.UART_HardwareFlowControl = UART_HardwareFlowControl_None;
+UART_Init(UART2, &UART_InitStructure);
+```
+
+此次发送没有用到中断，所以不初始化中断
+
+接收要使用中断
+
+```
+UART_ITConfig(UART2, UART_IT_RXIEN, ENABLE);//接收中断
+NVIC_InitTypeDef NVIC_InitStructure;
+NVIC_InitStructure.NVIC_IRQChannel = UART2_IRQn;
+NVIC_InitStructure.NVIC_IRQChannelPriority = 3;
+NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+NVIC_Init(&NVIC_InitStructure);
+```
+
+最后开uart的时钟
+
+```
+UART_Cmd(UART2, ENABLE);
+```
+
+工作中
+
+发送：
+
+```
+UART_PutChar(UART2,'L');                     //发送字节”L“到UART口
+```
+
+接收：
+
+```
+void UART2_IRQHandler(void)
+{
+  //判断中断类型
+  if(UART_GetITStatus(UART2, UART_IT_RXIEN))
+  {
+    UART_ClearITPendingBit(UART2, UART_IT_RXIEN);
+    //读取缓冲区
+    char a = UART_GetChar(UART2);
+    OLED_P6x8Str(0,0,&a);//屏幕打印刚才接收到的另一单片机发送的L
+  }
+}
+```
+
+发送可以发送字符串，也就可以发数字，接收需要设定好接多少个字节，还没有写接收字符串的函数
+
+```
+void UART_PutChar(UART_TypeDef* UARTx,char ch);
+void UART_PutStr(UART_TypeDef* UARTx,char *str);
+void UART_PutNum(UART_TypeDef* UARTx, int num);
+void UART_PutFloat(UART_TypeDef* UARTx,float num);
+char UART_GetChar(UART_TypeDef* UARTx);
+```
+
