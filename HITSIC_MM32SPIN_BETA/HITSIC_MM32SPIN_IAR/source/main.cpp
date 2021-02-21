@@ -30,37 +30,45 @@ int main(void)
 //  RCC_ClocksTypeDef SYS_Clock;
 //  RCC_GetClocksFreq(&SYS_Clock);
   
-  MPU6050_Init();
-//  OLED_Init();
-//  delay_ms(1000);
+//  MPU6050_Init();
+  OLED_Init();
+  delay_ms(1000);
+//  float var = 3.1415;
+  uint32_t buff=0;//=0x40490e56;
+//  const uint32_t buff=(((uint32_t)BYTE3(var)<<24)|((uint32_t)BYTE2(var)<<16)|((uint32_t)BYTE1(var)<<8)|BYTE0(var));// = (uint32_t)var;
+  
 //  const uint32_t buff[10]={};
-  //Flash_Page_Read(FLASH_SECTION_15, FLASH_PAGE_0, buff, 10);
-//  uint8_t as = Flash_Page_Write (FLASH_SECTION_15, FLASH_PAGE_0, buff, 10);
+  Flash_Page_Read(FLASH_SECTION_15, FLASH_PAGE_0, &buff, 1);
+//  uint8_t as = Flash_Page_Write (FLASH_SECTION_15, FLASH_PAGE_0, &buff, 1);
+  float var1 = 0;
+  memcpy(&var1, &buff, 4);
+  //OLED_Print_Num(0,1,buff);
+  OLED_Print_Float(0,0,var1);
 //  for(uint8_t i=0;i<7;i++)
 //  {
 //    OLED_Print_Num(0,i,buff[i]);
 //  }
   
   
-//  使用TIM14作为定时器，5ms读取一次
-    TIM_TimeBaseInitTypeDef TIM_TimeBaseInitStructure;
-    
-    RCC_APB2PeriphClockCmd(RCC_APB2Periph_TIM14, ENABLE);
-  
-  TIM_TimeBaseInitStructure.TIM_Prescaler = 96;//1MHz
-  TIM_TimeBaseInitStructure.TIM_Period = 5000;//5ms
-  TIM_TimeBaseInitStructure.TIM_CounterMode = TIM_CounterMode_Up;
-  TIM_TimeBaseInitStructure.TIM_ClockDivision = TIM_CKD_DIV1;
-  TIM_TimeBaseInitStructure.TIM_RepetitionCounter = 0;
-  TIM_TimeBaseInit(TIM14, &TIM_TimeBaseInitStructure);
-  
-  NVIC_InitTypeDef NVIC_InitStructure;
-  NVIC_InitStructure.NVIC_IRQChannel = TIM14_IRQn;
-  NVIC_InitStructure.NVIC_IRQChannelPriority = 2;
-  NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-  NVIC_Init(&NVIC_InitStructure);
-  
-  TIM_ITConfig(TIM14, TIM_IT_Update, ENABLE);//相应中断，此处为计数器溢出更新引起中断
+////  使用TIM14作为定时器，5ms读取一次
+//    TIM_TimeBaseInitTypeDef TIM_TimeBaseInitStructure;
+//    
+//    RCC_APB2PeriphClockCmd(RCC_APB2Periph_TIM14, ENABLE);
+//  
+//  TIM_TimeBaseInitStructure.TIM_Prescaler = 96;//1MHz
+//  TIM_TimeBaseInitStructure.TIM_Period = 5000;//5ms
+//  TIM_TimeBaseInitStructure.TIM_CounterMode = TIM_CounterMode_Up;
+//  TIM_TimeBaseInitStructure.TIM_ClockDivision = TIM_CKD_DIV1;
+//  TIM_TimeBaseInitStructure.TIM_RepetitionCounter = 0;
+//  TIM_TimeBaseInit(TIM14, &TIM_TimeBaseInitStructure);
+//  
+//  NVIC_InitTypeDef NVIC_InitStructure;
+//  NVIC_InitStructure.NVIC_IRQChannel = TIM14_IRQn;
+//  NVIC_InitStructure.NVIC_IRQChannelPriority = 2;
+//  NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+//  NVIC_Init(&NVIC_InitStructure);
+//  
+//  TIM_ITConfig(TIM14, TIM_IT_Update, ENABLE);//相应中断，此处为计数器溢出更新引起中断
 //  TIM_Cmd(TIM14, ENABLE);//计数器使能
 //  delay_ms(200);
 //  OLED_CLS();
@@ -101,40 +109,40 @@ int main(void)
   //OLED_Logo();
   
   
-  //上位机初始化  a9tx a10rx uart1
-  GPIO_InitTypeDef GPIO_InitStructure;//声明一个结构体变量，用来初始化GPIO
-  RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOA, ENABLE);
-
-  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_9;
-  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
-  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-  GPIO_Init(GPIOA, &GPIO_InitStructure);
-  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10;
-  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;
-  GPIO_Init(GPIOA, &GPIO_InitStructure);
-  GPIO_PinAFConfig(GPIOA, GPIO_PinSource9, GPIO_AF_1);
-  GPIO_PinAFConfig(GPIOA, GPIO_PinSource10, GPIO_AF_1);
-  
-  UART_InitTypeDef UART_InitStructure;
-  RCC_APB2PeriphClockCmd(RCC_APB2Periph_UART1, ENABLE);
-//  UART_StructInit(&UART_InitStructure);
-  UART_InitStructure.UART_BaudRate=115200;//波特率
-  UART_InitStructure.UART_WordLength = UART_WordLength_8b;
-  UART_InitStructure.UART_StopBits = UART_StopBits_1;
-  UART_InitStructure.UART_Parity = UART_Parity_No;
-  UART_InitStructure.UART_Mode = UART_Mode_Rx | UART_Mode_Tx;
-  UART_InitStructure.UART_HardwareFlowControl = UART_HardwareFlowControl_None;
-  UART_Init(UART1, &UART_InitStructure);
-  
-//  UART_ITConfig(UART2, UART_IT_TXIEN, ENABLE);
-//  UART_ITConfig(UART1, UART_IT_RXIEN, ENABLE);//两种中断
-//  NVIC_InitTypeDef NVIC_InitStructure;
-//  NVIC_InitStructure.NVIC_IRQChannel = UART2_IRQn;
-//  NVIC_InitStructure.NVIC_IRQChannelPriority = 3;
-//  NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-//  NVIC_Init(&NVIC_InitStructure);
-  UART_Cmd(UART1, ENABLE);
-  TIM_Cmd(TIM14, ENABLE);//计数器使能
+//  //上位机初始化  a9tx a10rx uart1
+//  GPIO_InitTypeDef GPIO_InitStructure;//声明一个结构体变量，用来初始化GPIO
+//  RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOA, ENABLE);
+//
+//  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_9;
+//  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
+//  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+//  GPIO_Init(GPIOA, &GPIO_InitStructure);
+//  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10;
+//  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;
+//  GPIO_Init(GPIOA, &GPIO_InitStructure);
+//  GPIO_PinAFConfig(GPIOA, GPIO_PinSource9, GPIO_AF_1);
+//  GPIO_PinAFConfig(GPIOA, GPIO_PinSource10, GPIO_AF_1);
+//  
+//  UART_InitTypeDef UART_InitStructure;
+//  RCC_APB2PeriphClockCmd(RCC_APB2Periph_UART1, ENABLE);
+////  UART_StructInit(&UART_InitStructure);
+//  UART_InitStructure.UART_BaudRate=115200;//波特率
+//  UART_InitStructure.UART_WordLength = UART_WordLength_8b;
+//  UART_InitStructure.UART_StopBits = UART_StopBits_1;
+//  UART_InitStructure.UART_Parity = UART_Parity_No;
+//  UART_InitStructure.UART_Mode = UART_Mode_Rx | UART_Mode_Tx;
+//  UART_InitStructure.UART_HardwareFlowControl = UART_HardwareFlowControl_None;
+//  UART_Init(UART1, &UART_InitStructure);
+//  
+////  UART_ITConfig(UART2, UART_IT_TXIEN, ENABLE);
+////  UART_ITConfig(UART1, UART_IT_RXIEN, ENABLE);//两种中断
+////  NVIC_InitTypeDef NVIC_InitStructure;
+////  NVIC_InitStructure.NVIC_IRQChannel = UART2_IRQn;
+////  NVIC_InitStructure.NVIC_IRQChannelPriority = 3;
+////  NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+////  NVIC_Init(&NVIC_InitStructure);
+//  UART_Cmd(UART1, ENABLE);
+//  TIM_Cmd(TIM14, ENABLE);//计数器使能
   
 //  GPIO_InitTypeDef GPIO_InitStructure2;//声明一个结构体变量，用来初始化GPIO
 //  RCC_AHBPeriphClockCmd(KEY_PORT_RCC, ENABLE);
@@ -227,7 +235,7 @@ int main(void)
 //        delay();
 //        GPIO_WriteBit(BEEP_PORT,BEEP_PIN,Bit_RESET);
 //      }
-      Send_Variable();
+//      Send_Variable();
       //delay(10000);
 //    UART_PutChar(UART1,'L');                     //发送 字节到UART口
 //    delay_ms(500);

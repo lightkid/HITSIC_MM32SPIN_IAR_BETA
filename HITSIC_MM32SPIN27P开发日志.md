@@ -639,6 +639,30 @@ uint8_t Flash_Page_Write(FLASH_SEC_enum sector_num, FLASH_PAGE_enum page_num, co
 
 没有初始化函数
 
+附加：
+
+1.使用flash存float类型的数据
+
+本质上，float类型在内存中占据32位同uint32_t，因此可将那32位数据存入flash当中，读取的时候只要正确的将32位数据对应好就能正确读取。
+
+举个例子，将3.1415存入内存并取出
+
+```
+float var = 3.1415;
+const uint32_t buff=(((uint32_t)BYTE3(var)<<24)|((uint32_t)BYTE2(var)<<16)|((uint32_t)BYTE1(var)<<8)|BYTE0(var));//此步将float各个字节取出并拼接成32位
+uint8_t as = Flash_Page_Write (FLASH_SECTION_15, FLASH_PAGE_0, &buff, 1);//存到flash一个地方
+```
+
+读取
+
+```
+uint32_t buff=0;
+Flash_Page_Read(FLASH_SECTION_15, FLASH_PAGE_0, &buff, 1);//从刚才的地方读
+float var1 = 0;
+memcpy(&var1, &buff, 4);//将32位数据按顺序放入float数据各位，此时var1中的数据为3.1415
+OLED_Print_Float(0,0,var1);//将结果打印到屏幕上
+```
+
 ##### 八、UART
 
 包装的头文件
