@@ -13,9 +13,19 @@
 #define KEY2            GPIO_Pin_1
 #define KEY_PORT_RCC    RCC_AHBPeriph_GPIOC
 
+typedef struct value
+{
+  int a;
+  float b;
+  uint32_t c;
+  uint8_t d;
+}value_t;
+
+value_t val;
 
 int main(void)
 {
+  
   //HSE 96MHz MAX
   HSE_SetSysClk(RCC_PLLMul_12);
   delay_init();
@@ -33,17 +43,38 @@ int main(void)
 //  MPU6050_Init();
   OLED_Init();
   delay_ms(1000);
+  
+  memset(&val,0,sizeof(value_t));
+  val.a=1;
+  val.b=1.1;
+  val.c=2;
+  val.d=3;
+  OLED_Print_Num(0,0,val.a);
+  OLED_Print_Float(0,1,val.b);
+  OLED_Print_Num(0,2,(int)val.c);
+  OLED_Print_Num(0,3,(int)val.d);
 //  float var = 3.1415;
-  uint32_t buff=0;//=0x40490e56;
+  uint32_t buff[10]={0};//=0x40490e56;
+  memcpy(buff,&val,sizeof(value_t));
+    uint8_t as = Flash_Page_Write (FLASH_SECTION_15, FLASH_PAGE_0, buff, 10);
+    memset(&val,0,sizeof(value_t));
+    memset(buff,0,10);
 //  const uint32_t buff=(((uint32_t)BYTE3(var)<<24)|((uint32_t)BYTE2(var)<<16)|((uint32_t)BYTE1(var)<<8)|BYTE0(var));// = (uint32_t)var;
   
 //  const uint32_t buff[10]={};
-  Flash_Page_Read(FLASH_SECTION_15, FLASH_PAGE_0, &buff, 1);
-//  uint8_t as = Flash_Page_Write (FLASH_SECTION_15, FLASH_PAGE_0, &buff, 1);
-  float var1 = 0;
-  memcpy(&var1, &buff, 4);
-  //OLED_Print_Num(0,1,buff);
-  OLED_Print_Float(0,0,var1);
+//    uint32_t buf;
+  Flash_Page_Read(FLASH_SECTION_15, FLASH_PAGE_0, buff, 10);
+  
+  //float var1 = 0;
+  memcpy(&val, &buff, sizeof(value_t));
+  OLED_Print_Num(55,0,val.a);
+   
+  OLED_Print_Float(55,1,val.b);
+
+  OLED_Print_Num(55,2,val.c);
+
+  OLED_Print_Num(55,3,val.d);
+//  OLED_Print_Float(0,0,var1);
 //  for(uint8_t i=0;i<7;i++)
 //  {
 //    OLED_Print_Num(0,i,buff[i]);

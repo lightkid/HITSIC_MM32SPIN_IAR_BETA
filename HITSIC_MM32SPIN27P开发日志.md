@@ -663,6 +663,58 @@ memcpy(&var1, &buff, 4);//将32位数据按顺序放入float数据各位，此�
 OLED_Print_Float(0,0,var1);//将结果打印到屏幕上
 ```
 
+2.使用flash存结构体
+
+思路类似，定义一个固定但足够长的uint32_t类型数组，使用memset和memcpy两种函数。
+
+举个例子
+
+定义一个结构体
+
+```
+typedef struct value
+{
+  int a;
+  float b;
+  uint32_t c;
+  uint8_t d;
+}value_t;
+
+value_t val;
+```
+
+然后初始化
+
+```
+memset(&val,0,sizeof(value_t));
+val.a=1;
+val.b=1.1;
+val.c=2;
+val.d=3;
+```
+
+定义缓冲区buff并初始化
+
+```
+uint32_t buff[10]={0};
+```
+
+将结构体里的数赋值到缓冲区中，然后将缓冲区的内容全部存入flash
+
+```
+memcpy(buff,&val,sizeof(value_t));
+uint8_t as = Flash_Page_Write (FLASH_SECTION_15, FLASH_PAGE_0, buff, 10);
+```
+
+读取
+
+```
+Flash_Page_Read(FLASH_SECTION_15, FLASH_PAGE_0, buff, 10);//将缓冲区全读出来
+memcpy(&val, &buff, sizeof(value_t));//复制结构体长度
+```
+
+注意缓冲区长度要大于结构体的长度。
+
 ##### 八、UART
 
 包装的头文件
