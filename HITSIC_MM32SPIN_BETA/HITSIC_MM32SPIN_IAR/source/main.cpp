@@ -23,6 +23,34 @@ typedef struct value
 
 value_t val;
 
+float ax;
+
+//void my_i2c_read_byte()//(uint8_t* data,uint8_t reg)
+//{
+//  int16_t val;
+//  //发起始位
+//  I2C_GenerateSTART(I2C1,ENABLE);
+//  //发地址位
+////  I2C_Send7bitAddress(I2C1, 0xD0, I2C_Direction_Receiver);//陀螺仪地址/接收方向
+//  //发寄存器
+//  I2C_SendData(I2C1, 0x3B);//加速度
+//  //等中断
+//  while(!I2C_GetITStatus(I2C1, I2C_IT_TX_EMPTY))
+//  //接数
+//  //接加速度ax高8位
+//  while(!I2C_GetITStatus(I2C1, I2C_IT_RX_FULL))//rx满了就接
+//  val = I2C_ReceiveData(I2C1);
+//  while(!I2C_GetITStatus(I2C1, I2C_IT_RX_FULL))
+//  //接加速度ax低8位
+//  val<<8;
+//  val |= I2C_ReceiveData(I2C1);
+//  //现有ack/最后一个要有nack
+//  
+//  //发停止
+//  I2C_GenerateSTOP(I2C1,ENABLE);
+//  ax= (4.0 * 9.8 / 32768.0)*val;
+//}
+
 int main(void)
 {
   
@@ -40,33 +68,60 @@ int main(void)
 //  RCC_ClocksTypeDef SYS_Clock;
 //  RCC_GetClocksFreq(&SYS_Clock);
   
-//  MPU6050_Init();
+  MPU6050_Init();
   OLED_Init();
   delay_ms(1000);
-  
+//  GPIO_InitTypeDef GPIO_InitStructure;//声明一个结构体变量，用来初始化GPIO
+//  RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOB, ENABLE);
+//  GPIO_InitStructure1.GPIO_Pin = GPIO_Pin_8|GPIO_Pin_9;
+//  GPIO_InitStructure1.GPIO_Mode = GPIO_Mode_AF_OD;
+//  GPIO_InitStructure1.GPIO_Speed = GPIO_Speed_50MHz;
+//  GPIO_Init(GPIOB, &GPIO_InitStructure);
+//  GPIO_PinAFConfig(GPIOB, GPIO_PinSource8, GPIO_AF_1);
+//  GPIO_PinAFConfig(GPIOB, GPIO_PinSource9, GPIO_AF_1);
+//  
+//  I2C_InitTypeDef I2C_InitStructure;
+//  RCC_APB1PeriphClockCmd(RCC_APB1Periph_I2C1, ENABLE);
+//  I2C_StructInit(&I2C_InitStructure);
+//  I2C_Init(I2C1 ,&I2C_InitStructure);
+//  I2C_ITConfig(I2C1, I2C_IT_TX_EMPTY, ENABLE);
+//  I2C_ITConfig(I2C1, I2C_IT_RX_FULL, ENABLE);
+//  I2C_Send7bitAddress(I2C1, 0xD0, I2C_Direction_Receiver);//陀螺仪地址/接收方向
+//  
+//  NVIC_InitTypeDef NVIC_InitStructure1;
+//  NVIC_InitStructure1.NVIC_IRQChannel = I2C1_IRQn;
+//  NVIC_InitStructure1.NVIC_IRQChannelPriority = 3;
+//  NVIC_InitStructure1.NVIC_IRQChannelCmd = ENABLE;
+//  NVIC_Init(&NVIC_InitStructure1);
+//  
+//  I2C_Cmd(I2C1, ENABLE);
   memset(&val,0,sizeof(value_t));
-  val.a=1;
-  val.b=1.1;
-  val.c=2;
-  val.d=3;
-  OLED_Print_Num(0,0,val.a);
-  OLED_Print_Float(0,1,val.b);
-  OLED_Print_Num(0,2,(int)val.c);
-  OLED_Print_Num(0,3,(int)val.d);
-//  float var = 3.1415;
-  uint32_t buff[10]={0};//=0x40490e56;
-  memcpy(buff,&val,sizeof(value_t));
-    uint8_t as = Flash_Page_Write (FLASH_SECTION_15, FLASH_PAGE_0, buff, 10);
-    memset(&val,0,sizeof(value_t));
-    memset(buff,0,10);
-//  const uint32_t buff=(((uint32_t)BYTE3(var)<<24)|((uint32_t)BYTE2(var)<<16)|((uint32_t)BYTE1(var)<<8)|BYTE0(var));// = (uint32_t)var;
-  
-//  const uint32_t buff[10]={};
-//    uint32_t buf;
+//  val.a=2;
+//  val.b=3.14;
+//  val.c=6;
+//  val.d=7;
+  uint32_t buff[10]={0};
+//  OLED_Print_Num(0,0,val.a);
+//  OLED_Print_Float(0,1,val.b);
+//  OLED_Print_Num(0,2,(int)val.c);
+//  OLED_Print_Num(0,3,(int)val.d);
+//  float var = 8.8;
+//  uint32_t val=0;
+//  memcpy(&val, &var, sizeof(float));
+//  uint32_t buff[10]={0};//=0x40490e56;
+//  memcpy(buff,&val,sizeof(value_t));
+//  uint8_t as = Flash_Page_Write (FLASH_SECTION_15, FLASH_PAGE_0, buff, 10);
+//    memset(&val,0,sizeof(value_t));
+//    memset(buff,0,10);
+////  const uint32_t buff=(((uint32_t)BYTE3(var)<<24)|((uint32_t)BYTE2(var)<<16)|((uint32_t)BYTE1(var)<<8)|BYTE0(var));// = (uint32_t)var;
+//  
+////  const uint32_t buff[10]={};
+//  uint32_t buf=0;
   Flash_Page_Read(FLASH_SECTION_15, FLASH_PAGE_0, buff, 10);
   
-  //float var1 = 0;
-  memcpy(&val, &buff, sizeof(value_t));
+//  
+//  float var1 = 0;
+  memcpy(&val, buff, sizeof(value_t));
   OLED_Print_Num(55,0,val.a);
    
   OLED_Print_Float(55,1,val.b);
@@ -269,7 +324,9 @@ int main(void)
 //      Send_Variable();
       //delay(10000);
 //    UART_PutChar(UART1,'L');                     //发送 字节到UART口
-//    delay_ms(500);
+//    delay_ms(50);
+//    my_i2c_read_byte();
+//    OLED_Print_Float(0,0,ax);
   }
   return 0;
 }

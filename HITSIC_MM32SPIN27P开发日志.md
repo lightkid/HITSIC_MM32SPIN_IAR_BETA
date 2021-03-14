@@ -710,7 +710,7 @@ uint8_t as = Flash_Page_Write (FLASH_SECTION_15, FLASH_PAGE_0, buff, 10);
 
 ```
 Flash_Page_Read(FLASH_SECTION_15, FLASH_PAGE_0, buff, 10);//将缓冲区全读出来
-memcpy(&val, &buff, sizeof(value_t));//复制结构体长度
+memcpy(&val, buff, sizeof(value_t));//复制结构体长度
 ```
 
 注意缓冲区长度要大于结构体的长度。

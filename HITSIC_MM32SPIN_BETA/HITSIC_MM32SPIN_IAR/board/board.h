@@ -12,7 +12,7 @@
 #include "HAL_flash.h"
 #include "flash.h"
 #include "HAL_gpio.h"
-//#include "HAL_i2c.h"
+#include "HAL_i2c.h"
 //#include "HAL_iwdg.h"
 #include "HAL_misc.h"
 //#include "HAL_op.h"
